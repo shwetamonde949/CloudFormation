@@ -1,6 +1,8 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Description: 'vpc using CloudFormation'
+
 Resources:
+# My VPC
  myVPC:
   Type: AWS::EC2::VPC 
   Properties:
@@ -10,3 +12,125 @@ Resources:
    Tags:
     - Key: Name 
       Value: myVPC 
+
+# Public Subnet in AZ1
+ PublicSubnet1A:
+  Type: AWS::EC2::Subnet 
+  Properties:
+   VpcId: !Ref myVPC
+   CidrBlock: 172.16.1.0/24
+   AvailabilityZone: !Select [0, !GetAZs '']
+   MapPublicIpOnLaunch: true 
+   Tags:
+    - Key: Name
+      Value: PublicSubnet1A
+
+#App Private Subnet in AZ1
+ AppPrivateSubnet1A:
+  Type: AWS::EC2::Subnet
+  Properties:
+   VpcId: !Ref myVPC
+   CidrBlock: 172.16.2.0/24
+   AvailabilityZone: !Select [0, !GetAZs '']
+   Tags:
+    - Key : Name 
+      Value: AppPrivateSubnet1A
+
+#Data Private Subnet in AZ1
+ DataPrivateSubnet1A:
+  Type: AWS::EC2::Subnet
+  Properties:
+   VpcId: !Ref myVPC
+   CidrBlock: 172.16.3.0/24
+   AvailabilityZone: !Select [0, !GetAZs '']
+   Tags:
+    - Key : Name 
+      Value: DataPrivateSubnet1A
+
+
+#Public Subnet in AZ2
+ PublicSubnet2B:
+  Type: AWS::EC2::Subnet
+  Properties:
+   VpcId: !Ref myVPC
+   CidrBlock: 172.16.4.0/24
+   AvailabilityZone: !Select [1, !GetAZs '']
+   MapPublicIpOnLaunch: true
+   Tags: 
+    - Key : Name
+      Value : PublicSubnet2B
+
+
+# Private App Subnet in AZ2
+ AppPrivateSubnet2B:
+  Type: AWS::EC2::Subnet
+  Properties:
+   VpcId: !Ref myVPC
+   CidrBlock: 172.16.5.0/24
+   AvailabilityZone: !Select [1, !GetAZs '']
+   Tags:
+    - Key : Name 
+      Value: AppPrivateSubnet2B
+
+
+# Private App Subnet in AZ2
+ DataPrivateSubnet2B:
+  Type: AWS::EC2::Subnet
+  Properties: 
+   VpcId: !Ref myVPC
+   CidrBlock: 172.16.6.0/24
+   AvailabilityZone: !Select [1, !GetAZs '']
+   Tags:
+    - Key : Name
+      Value : DataPrivateSubnet2B
+
+#Iternet Gateway
+ InternetGateway:
+  Type: AWS::EC2::InternetGateway
+  Properties: 
+   Tags:
+    - Key : Name
+      Value: InternetGateway
+
+#Attach IGW to VPC
+ AttachGateway:
+  Type: AWS::EC2::VPCGatewayAttachment
+  Properties:
+   VpcId: !Ref myVPC
+   InternetGatewayId: !Ref InternetGateway
+
+
+# Public Route Table
+ PublicRouteTable:
+  Type: AWS::EC2::RouteTable
+  Properties:
+   VpcId: !Ref myVPC
+   Tags:
+    - Key : Name
+      Value: PublicRouteTable
+
+# Routes
+ PublicRoute:
+  Type: AWS::EC2::Route
+  Properties: 
+   RouteTableId: !Ref PublicRouteTable
+   DestinationCidrBlock: 0.0.0.0/0
+   GatewayId: !Ref InternetGateway
+
+# Public Subnet 1A Route Table Association
+
+ PublicSubnet1ARouteTableAssociation:
+  Type: AWS::EC2::SubnetRouteTableAssociation
+  Properties:
+   SubnetId: !Ref PublicSubnet1A
+   RouteTableId: !Ref PublicRouteTable
+
+
+# Public Subnet 1A Route Table Association
+
+ PublicSubnet2BRouteTableAssociation:
+  Type: AWS::EC2::SubnetRouteTableAssociation
+  Properties:
+   SubnetId: !Ref PublicSubnet2B
+   RouteTableId: !Ref PublicRouteTable
+
